@@ -117,3 +117,4 @@ if ACCESS_TOKEN:
     else:
         st.markdown('<h4 style="color:red">Wrong Access token!</h4>',
                     unsafe_allow_html=True)
+st.markdown('<center><h4>Made with ❤️ by <a style="color:white;" href="https://github.com/Prajwalsrinvas">Prajwal Srinivas</a></h4></center>',unsafe_allow_html=True)
