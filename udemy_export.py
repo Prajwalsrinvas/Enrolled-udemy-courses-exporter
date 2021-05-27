@@ -1,27 +1,27 @@
-import requests
-import pandas as pd
-import time
-import streamlit as st
 import base64
 import io
+import requests
+import pandas as pd
+import streamlit as st
 
 st.set_page_config(page_title='Udemy Export', page_icon='💡', layout='wide')
 
-hide_streamlit_style = """
-<style>
-#MainMenu {visibility: hidden;}
-footer {visibility: hidden;}
-</style>
-
-"""
+# hide streamlit hamburger menu and footer
+hide_streamlit_style =  """
+                        <style>
+                        #MainMenu {visibility: hidden;}
+                        footer {visibility: hidden;}
+                        </style>
+                        """
 st.markdown(hide_streamlit_style, unsafe_allow_html=True)
 
-st.markdown('<center><h1 style="color:#008080;"><u>Enrolled Udemy courses exporter</u></h1></center>',
-            unsafe_allow_html=True)
+# title
+st.markdown('<center><h1 style="color:#008080;"><u>Enrolled Udemy courses exporter</u></h1></center>', unsafe_allow_html=True)
+
+# input access token
 ACCESS_TOKEN = st.text_input("Enter access_token:")
-val = False
 
-
+# returns json response from udemy api for given page number
 def get_json_data(page_num):
     headers = {
         'authority': 'www.udemy.com',
@@ -49,23 +49,25 @@ def get_json_data(page_num):
         params=params)
     return response.json()
 
-
+# create empty pandas dataframe, to be filled in with data from json response
 df = pd.DataFrame(columns=[
     'Course Name', 'Price', 'Instructor(s)', 'Course URL', 'Instructor(s) URL'
 ])
 
-
+# has logic for the streamlit webapp and extracting required fields from json response 
 def main(ACCESS_TOKEN):
     last_page_reached = False
     total_courses = 0
+            
     if ACCESS_TOKEN:
         json_data = get_json_data(1)
+
         if json_data.get('detail', None) == 'You do not have permission to perform this action.':
-            st.markdown('<h4 style="color:red">Wrong Access token!</h4>',
-                        unsafe_allow_html=True)
+            st.markdown('<h4 style="color:red">Wrong Access token!</h4>', unsafe_allow_html=True)
         else:
             st.write('Extracting enrolled courses data!')
             curr_page = 1
+            
             while True:
                 json_data = get_json_data(curr_page)
 
@@ -81,27 +83,22 @@ def main(ACCESS_TOKEN):
                 for course in json_data['results']:
                     course_name = course['title'].strip()
                     price = course['price']
-                    instructor = " | ".join(
-                        [i['title'] for i in course['visible_instructors']])
+                    instructor = " | ".join([i['title'] for i in course['visible_instructors']])
                     course_url = f"udemy.com{course['url'].replace('/learn/','')}"
-                    instructor_url = " | ".join(
-                        [f"udemy.com{i['url']}" for i in course['visible_instructors']])
+                    instructor_url = " | ".join([f"udemy.com{i['url']}" for i in course['visible_instructors']])
 
                     index = len(df)
-                    df.loc[index] = [
-                        course_name, price, instructor, course_url, instructor_url
-                    ]
+                    df.loc[index] = [course_name, price, instructor, course_url, instructor_url]
                 curr_page += 1
-                time.sleep(5)
+           
 
             sentence = f"Total Enrolled Courses: {len(df)}"
-            st.markdown(
-                f'<h3 style="color:#008080;">{sentence}</h3>', unsafe_allow_html=True)
+            st.markdown(f'<h3 style="color:#008080;">{sentence}</h3>', unsafe_allow_html=True)
 
             if last_page_reached:
+                # logic to export dataframe as excel file
                 towrite = io.BytesIO()
-                downloaded_file = df.to_excel(
-                    towrite, encoding='utf-8', index=False, header=True)
+                downloaded_file = df.to_excel(towrite, encoding='utf-8', index=False, header=True)
                 towrite.seek(0)  # reset pointer
                 b64 = base64.b64encode(towrite.read()).decode()  # some strings
                 linko = f'<a style="color:black" href="data:application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;base64,{b64}" download="udemy_enrolled_courses.xlsx">Download enrolled courses data as an excel sheet</a>'
@@ -115,6 +112,5 @@ if ACCESS_TOKEN:
     if len(str(ACCESS_TOKEN)) == 40:
         main(ACCESS_TOKEN)
     else:
-        st.markdown('<h4 style="color:red">Wrong Access token!</h4>',
-                    unsafe_allow_html=True)
+        st.markdown('<h4 style="color:red">Wrong Access token!</h4>', unsafe_allow_html=True)
 st.markdown('<center><h4>Made with ❤️ by <a style="color:white;" href="https://github.com/Prajwalsrinvas">Prajwal Srinivas</a></h4></center>',unsafe_allow_html=True)
