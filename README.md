@@ -17,3 +17,7 @@ function getCookie(name) {
 }
 getCookie('access_token')
 ```
+
+![Get access token](https://github.com/Prajwalsrinvas/Enrolled-udemy-courses-exporter/blob/main/screenshots/1.console.png)
+
+- The string returned is your access token
