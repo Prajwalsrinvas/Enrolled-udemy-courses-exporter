@@ -57,8 +57,6 @@ df = pd.DataFrame(columns=[
 # has logic for the streamlit webapp and extracting required fields from json response 
 def main(ACCESS_TOKEN):
     last_page_reached = False
-    total_courses = 0
-            
     if ACCESS_TOKEN:
         json_data = get_json_data(1)
 
@@ -67,7 +65,9 @@ def main(ACCESS_TOKEN):
         else:
             st.write('Extracting enrolled courses data!')
             curr_page = 1
-            
+
+            total_courses = 0
+
             while True:
                 json_data = get_json_data(curr_page)
 
@@ -90,7 +90,7 @@ def main(ACCESS_TOKEN):
                     index = len(df)
                     df.loc[index] = [course_name, price, instructor, course_url, instructor_url]
                 curr_page += 1
-           
+
 
             sentence = f"Total Enrolled Courses: {len(df)}"
             st.markdown(f'<h3 style="color:#008080;">{sentence}</h3>', unsafe_allow_html=True)
